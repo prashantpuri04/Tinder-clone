@@ -1,0 +1,18 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "description": "devTinder-prashant",
+  "license": "ISC",
+  "author": "Prashant Puri",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
