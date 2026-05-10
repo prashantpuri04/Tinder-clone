@@ -8,9 +8,35 @@ const User = require("./models/user");
 app.use(express.json());
 const PORT = 3000;
 
-app.use("/admin", adminAuth);
-app.use("/user", userAuth);
+//app.use("/admin", adminAuth);
+//app.use("/user", userAuth);
 
+
+app.get("/user",async (req, res) => {
+    console.log("Fetching all users");
+    try{
+        const userEmail = req.body.emailId;
+        console.log("User email from request body:", userEmail);
+        const users = await User.findOne({ emailId: userEmail });
+        if (!users) {
+            console.log("User not found with email:", userEmail);
+            return res.status(404).send({
+                message: "User not found with the provided email!"
+            });
+        }else{
+             res.status(200).send({
+            message: "User fetched successfully!",
+            users
+        });
+        }
+       
+    }catch (error) {
+        res.status(500).send({
+            message: "Error fetching users!",
+            error
+        });
+    }
+});
 
 app.post("/signup", async (req, res) => {
     console.log(req.body);
@@ -25,6 +51,23 @@ app.post("/signup", async (req, res) => {
     } catch (error) {
         res.status(500).send({
             message: "Error creating user!",
+            error
+        });
+    }
+});
+
+app.get("/feed", async(req,res)=>{
+    console.log("Fetching user feed");
+    try{
+        const users = await User.find();
+        res.status(200).send({
+            message: "User feed fetched successfully!",
+            users
+        });
+    }
+    catch (error) {
+        res.status(500).send({
+            message: "Error fetching user feed!",
             error
         });
     }
