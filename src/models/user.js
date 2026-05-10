@@ -19,8 +19,15 @@ const userSchema = new mongoose.Schema({
         type:Number,
     }, 
     gender:{
-        type:String
-    }
+        type:String,
+        validate(value){
+            if(!["male","female","other"].includes(value.toLowerCase())){
+                throw new Error("Invalid gender. Please choose 'male', 'female', or 'other'.");
+            }
+        }
+    },
+},{
+    timestamps:true
 });
 
 const User = mongoose.model("User",userSchema);
