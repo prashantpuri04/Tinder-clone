@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const {adminAuth,userAuth} = require("./middlewares/auth");
+const {userAuth} = require("./middlewares/auth");
 const connectDB = require("./config/database");
 //const {userAuth} = require("./middlewares/auth");
 const jwt = require("jsonwebtoken");
@@ -17,19 +17,19 @@ const PORT = 3000;
 //app.use("/user", userAuth);
 
 
-app.get("/profile", async(req, res) => {
+app.get("/profile", userAuth, async(req, res) => {
     try{
-const cookies = req.cookies;
+// const cookies = req.cookies;
     
-    const {token } = cookies;
-    if(!token){
-        throw new Error("Invalid Credentials!");
-    }
-    const decodedToken = await jwt.verify(token, "DEV@Tinder$780");
+//     const {token } = cookies;
+//     if(!token){
+//         throw new Error("Invalid Credentials!");
+//     }
+//     const decodedToken = await jwt.verify(token, "DEV@Tinder$780");
    
-    const {_id} = decodedToken;
+//     const {_id} = decodedToken;
     
-    const user = await User.findById(_id);
+    const user = req.user;
     
     if (!user) {
         throw new Error("User not found with the provided id!");
