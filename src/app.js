@@ -3,15 +3,52 @@ const app = express();
 const {adminAuth,userAuth} = require("./middlewares/auth");
 const connectDB = require("./config/database");
 //const {userAuth} = require("./middlewares/auth");
-
+const jwt = require("jsonwebtoken");
 const User = require("./models/user");
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 app.use(express.json());
+const bcrypt = require("bcrypt");
+//const { validateSignupData } = require("./utils/validataion");
+
 const PORT = 3000;
 
 //app.use("/admin", adminAuth);
 //app.use("/user", userAuth);
 
 
+app.get("/profile", async(req, res) => {
+    try{
+const cookies = req.cookies;
+    
+    const {token } = cookies;
+    if(!token){
+        throw new Error("Invalid Credentials!");
+    }
+    const decodedToken = await jwt.verify(token, "DEV@Tinder$780");
+   
+    const {_id} = decodedToken;
+    
+    const user = await User.findById(_id);
+    
+    if (!user) {
+        throw new Error("User not found with the provided id!");
+    }
+    res.status(200).send({
+        message: "User profile fetched successfully!",
+        user
+    });
+    }
+    catch (error) {
+        res.status(500).send({
+            message: "Error fetching user profile!",
+            error
+        });
+    }
+    
+});
+     
+   
 app.get("/user",async (req, res) => {
     console.log("Fetching all users");
     try{
@@ -42,8 +79,15 @@ app.post("/signup", async (req, res) => {
     console.log(req.body);
     try{
         console.log(req.body);
-        
-        const user = await User.create(req.body);
+        //validateSignupData(req);
+        const { firstName, lastName, emailId } = req.body;
+        const {password} = req.body;
+
+        const passwordHash = await bcrypt.hash(password, 10);
+        console.log("Password hash generated successfully:", passwordHash);
+        const user = await User.create({
+            firstName, lastName, emailId, password: passwordHash
+        });
         res.status(201).send({
             message: "User created successfully!",
             user
@@ -51,6 +95,38 @@ app.post("/signup", async (req, res) => {
     } catch (error) {
         res.status(500).send({
             message: "Error creating user!",
+            error
+        });
+    }
+});
+
+app.post("/login", async (req, res) => {
+    console.log("Login request received");
+    try{
+        const { emailId, password } = req.body;
+        console.log("Email and password received:", emailId, password);
+        const user = await User.findOne({ emailId });
+        if (!user) {
+            console.log("User not found with email:", emailId);
+            return res.status(404).send({
+                message: "User not found with the provided email!"
+            });
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (isPasswordValid) {
+            const token  = jwt.sign({_id:user._id, name: user.firstName }, "DEV@Tinder$780")
+            console.log("Login successful, token generated:", token);
+            res.cookie("token", token);
+            res.status(200).send({
+            message: "Login successful!",
+            user
+        });
+            
+        }
+       
+    } catch (error) {
+        res.status(500).send({
+            message: "Error during login!",
             error
         });
     }
