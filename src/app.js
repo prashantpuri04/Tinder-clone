@@ -3,13 +3,21 @@ const app = express();
 const {userAuth} = require("./middlewares/auth");
 const connectDB = require("./config/database");
 //const {userAuth} = require("./middlewares/auth");
-const jwt = require("jsonwebtoken");
-const User = require("./models/user");
+//const jwt = require("jsonwebtoken");
+//const User = require("./models/user");
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 app.use(express.json());
-const bcrypt = require("bcrypt");
+//const bcrypt = require("bcrypt");
 //const { validateSignupData } = require("./utils/validataion");
+
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 const PORT = 3000;
 
@@ -17,36 +25,36 @@ const PORT = 3000;
 //app.use("/user", userAuth);
 
 
-app.get("/profile", userAuth, async(req, res) => {
-    try{
-// const cookies = req.cookies;
+// app.get("/profile", userAuth, async(req, res) => {
+//     try{
+// // const cookies = req.cookies;
     
-//     const {token } = cookies;
-//     if(!token){
-//         throw new Error("Invalid Credentials!");
-//     }
-//     const decodedToken = await jwt.verify(token, "DEV@Tinder$780");
+// //     const {token } = cookies;
+// //     if(!token){
+// //         throw new Error("Invalid Credentials!");
+// //     }
+// //     const decodedToken = await jwt.verify(token, "DEV@Tinder$780");
    
-//     const {_id} = decodedToken;
+// //     const {_id} = decodedToken;
     
-    const user = req.user;
+//     const user = req.user;
     
-    if (!user) {
-        throw new Error("User not found with the provided id!");
-    }
-    res.status(200).send({
-        message: "User profile fetched successfully!",
-        user
-    });
-    }
-    catch (error) {
-        res.status(500).send({
-            message: "Error fetching user profile!",
-            error
-        });
-    }
+//     if (!user) {
+//         throw new Error("User not found with the provided id!");
+//     }
+//     res.status(200).send({
+//         message: "User profile fetched successfully!",
+//         user
+//     });
+//     }
+//     catch (error) {
+//         res.status(500).send({
+//             message: "Error fetching user profile!",
+//             error
+//         });
+//     }
     
-});
+// });
      
    
 app.get("/user",async (req, res) => {
@@ -75,79 +83,79 @@ app.get("/user",async (req, res) => {
     }
 });
 
-app.post("/signup", async (req, res) => {
-    console.log(req.body);
-    try{
-        console.log(req.body);
-        //validateSignupData(req);
-        const { firstName, lastName, emailId } = req.body;
-        const {password} = req.body;
+// app.post("/signup", async (req, res) => {
+//     console.log(req.body);
+//     try{
+//         console.log(req.body);
+//         //validateSignupData(req);
+//         const { firstName, lastName, emailId } = req.body;
+//         const {password} = req.body;
 
-        const passwordHash = await bcrypt.hash(password, 10);
-        console.log("Password hash generated successfully:", passwordHash);
-        const user = await User.create({
-            firstName, lastName, emailId, password: passwordHash
-        });
-        res.status(201).send({
-            message: "User created successfully!",
-            user
-        });
-    } catch (error) {
-        res.status(500).send({
-            message: "Error creating user!",
-            error
-        });
-    }
-});
+//         const passwordHash = await bcrypt.hash(password, 10);
+//         console.log("Password hash generated successfully:", passwordHash);
+//         const user = await User.create({
+//             firstName, lastName, emailId, password: passwordHash
+//         });
+//         res.status(201).send({
+//             message: "User created successfully!",
+//             user
+//         });
+//     } catch (error) {
+//         res.status(500).send({
+//             message: "Error creating user!",
+//             error
+//         });
+//     }
+// });
 
-app.post("/login", async (req, res) => {
-    console.log("Login request received");
-    try{
-        const { emailId, password } = req.body;
-        console.log("Email and password received:", emailId, password);
-        const user = await User.findOne({ emailId });
-        if (!user) {
-            console.log("User not found with email:", emailId);
-            return res.status(404).send({
-                message: "User not found with the provided email!"
-            });
-        }
-       // const isPasswordValid = await bcrypt.compare(password, user.password);
-       const isPasswordValid = await user.validatePassword(password);
-        if (isPasswordValid) {
-            //const token  = jwt.sign({_id:user._id, name: user.firstName }, "DEV@Tinder$780", { expiresIn: "1d" });
-            const token = await user.getJWT();
-            console.log("Login successful, token generated:", token);
-            res.cookie("token", token);
-            res.status(200).send({
-            message: "Login successful!",
-            user
-        });
+// app.post("/login", async (req, res) => {
+//     console.log("Login request received");
+//     try{
+//         const { emailId, password } = req.body;
+//         console.log("Email and password received:", emailId, password);
+//         const user = await User.findOne({ emailId });
+//         if (!user) {
+//             console.log("User not found with email:", emailId);
+//             return res.status(404).send({
+//                 message: "User not found with the provided email!"
+//             });
+//         }
+//        // const isPasswordValid = await bcrypt.compare(password, user.password);
+//        const isPasswordValid = await user.validatePassword(password);
+//         if (isPasswordValid) {
+//             //const token  = jwt.sign({_id:user._id, name: user.firstName }, "DEV@Tinder$780", { expiresIn: "1d" });
+//             const token = await user.getJWT();
+//             console.log("Login successful, token generated:", token);
+//             res.cookie("token", token);
+//             res.status(200).send({
+//             message: "Login successful!",
+//             user
+//         });
             
-        }
+//         }
        
-    } catch (error) {
-        res.status(500).send({
-            message: "Error during login!",
-            error
-        });
-    }
-});
+//     } catch (error) {
+//         res.status(500).send({
+//             message: "Error during login!",
+//             error
+//         });
+//     }
+// });
 
-app.post("/sendConnectionRequest",userAuth, async(req,res)=>{
-    console.log("Sending connection request");
-    try{
-        const user = req.user;
-        res.status(200).send({
-            message: user.firstName + "Connection request sent successfully!",
-            user
-        }); 
-    }
-    catch (error) {
+// app.post("/sendConnectionRequest",userAuth, async(req,res)=>{
+//     console.log("Sending connection request");
+//     try{
+//         const user = req.user;
+//         res.status(200).send({
+//             message: user.firstName + "Connection request sent successfully!",
+//             user
+//         }); 
+//     }
+//     catch (error) {
 
-    }
+//     }
 
-})
+// })
 
 
 app.get("/feed", async(req,res)=>{
