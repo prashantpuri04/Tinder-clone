@@ -112,9 +112,11 @@ app.post("/login", async (req, res) => {
                 message: "User not found with the provided email!"
             });
         }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+       // const isPasswordValid = await bcrypt.compare(password, user.password);
+       const isPasswordValid = await user.validatePassword(password);
         if (isPasswordValid) {
-            const token  = jwt.sign({_id:user._id, name: user.firstName }, "DEV@Tinder$780")
+            //const token  = jwt.sign({_id:user._id, name: user.firstName }, "DEV@Tinder$780", { expiresIn: "1d" });
+            const token = await user.getJWT();
             console.log("Login successful, token generated:", token);
             res.cookie("token", token);
             res.status(200).send({
@@ -131,6 +133,22 @@ app.post("/login", async (req, res) => {
         });
     }
 });
+
+app.post("/sendConnectionRequest",userAuth, async(req,res)=>{
+    console.log("Sending connection request");
+    try{
+        const user = req.user;
+        res.status(200).send({
+            message: user.firstName + "Connection request sent successfully!",
+            user
+        }); 
+    }
+    catch (error) {
+
+    }
+
+})
+
 
 app.get("/feed", async(req,res)=>{
     console.log("Fetching user feed");
